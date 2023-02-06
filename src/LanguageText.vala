@@ -49,6 +49,8 @@ namespace DesktopFolder.Lang {
     // desktopfolder menu - enable/disable lock items
     public const string DESKTOPFOLDER_MENU_LOCK_ITEMS            = _("Lock icons:");
     // desktopfolder menu - enable/disable lock panel
+    public const string DESKTOPFOLDER_MENU_FORCE_ICONS_RIGHT     = _("Force icons right:");
+    // desktopfolder menu - enable/disable forcing icons right
     public const string DESKTOPFOLDER_MENU_LOCK_PANEL            = _("Lock panel:");
     // desktopfolder menu - enable/disable text shadows
     public const string DESKTOPFOLDER_MENU_TEXT_SHADOW           = _("Text shadow:");

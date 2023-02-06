@@ -348,7 +348,7 @@ namespace DesktopFolder.Dialogs {
          */
         private Gtk.Widget get_properties_box () {
             var general_grid = new Gtk.Grid ();
-            general_grid.row_spacing    = 6;
+            general_grid.row_spacing    = 16;
             general_grid.column_spacing = 12;
 
             // The behavior section
@@ -388,15 +388,22 @@ namespace DesktopFolder.Dialogs {
             general_grid.attach (settings_switch, 1, 2, 1, 1);
             settings_switch.set_active (this.manager.get_settings ().lockitems);
             settings_switch.notify["active"].connect (this.window.on_toggle_lockitems);
+            
+            // force icons right
+            general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_FORCE_ICONS_RIGHT), 0, 3, 1, 1);
+            settings_switch = new SettingsSwitch ("force_icons_right");
+            general_grid.attach (settings_switch, 1, 3, 1, 1);
+            settings_switch.set_active (this.manager.get_settings ().forceiconsright);
+            settings_switch.notify["active"].connect (this.window.on_toggle_forceiconsright);
 
-            int top_offset = -1;
+            int top_offset = 0;
 
             if (this.window.get_type () != typeof (DesktopFolder.DesktopWindow)) {
                 top_offset = 0;
                 // lock panel
-                general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_LOCK_PANEL), 0, 3, 1, 1);
+                general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_LOCK_PANEL), 0, 4, 1, 1);
                 settings_switch = new SettingsSwitch ("lock_panel");
-                general_grid.attach (settings_switch, 1, 3, 1, 1);
+                general_grid.attach (settings_switch, 1, 4, 1, 1);
                 settings_switch.set_active (this.manager.get_settings ().lockpanel);
                 settings_switch.notify["active"].connect (this.window.on_toggle_lockpanel);
             }

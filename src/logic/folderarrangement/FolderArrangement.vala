@@ -170,89 +170,97 @@ private class DesktopFolder.Organize.Thread {
         }
     }
 
+
+
+    /**
+     * @name organizeLogic
+     * @description organize algorithm
+     */
+    private void organizeLogic (int width, int height, int margin) {
+            // cursors pixel
+            int cursor_x = margin;
+            int cursor_y = 0;
+            int padding  = parent_window.get_manager ().get_settings ().arrangement_padding;
+            Gee.HashMap <string, ItemSettings> managed_items = parent_window.get_manager ().get_settings ().get_items_parsed ();
+            Gee.List <Organize.ItemMove>       item_moves    = new Gee.ArrayList <Organize.ItemMove>();
+
+            for (int i = 0; i < items.length (); i++) {
+                ItemManager item = items.nth_data (i);
+
+                // moving in the view to the correct position
+                // parent_window.move_item (item.get_view (), cursor_x, cursor_y);
+                Gdk.Point px = Gdk.Point ();
+                px.x = cursor_x;
+                px.y = cursor_y;
+
+                // add the movement to the pending movements to be executed in the gtk thread
+                item_moves.add (new Organize.ItemMove (item.get_view (), px));
+
+                // saving settings for the new position
+                ItemSettings is = managed_items[item.get_file_name ()];
+
+                is.x            = cursor_x;
+                is.y            = cursor_y;
+
+                // moving the cursor horizontally
+                if (vertically) {
+                    cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                    if (cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH > height) {
+                        // we need to move to the next rows
+                        cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                        cursor_y = 0;
+                    }
+                } else {
+                    cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                    if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + margin > width) {
+                        // we need to move to the next rows
+                        cursor_x = margin;
+                        cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                    }
+                }
+            }
+            // only last to put the items in their positions, this is something can only be done in the gtk main thread
+            GLib.Idle.add_full (GLib.Priority.LOW, () => {
+                const int MAX = 5;
+                int cursor = 0;
+
+                while (cursor < MAX && item_moves.size > 0) {
+                    Organize.ItemMove move = item_moves.remove_at (0);
+                    UtilGtkAnimation.animate_move (move.view, move.point, 500, UtilFx.AnimationMode.EASE_IN_BACK);
+                    cursor++;
+                }
+
+                if (item_moves.size > 0) {
+                    // next iteration in the main gtk thread
+                    return true;
+                } else {
+                    parent_window.get_manager ().get_settings ().serialize_array (managed_items.values.to_array ());
+                    parent_window.get_manager ().get_settings ().save ();
+
+                    this.parent_window.hide_loading ();
+                    debug ("ORGANIZE THREAD -> END");
+                    return false;
+                }
+            });
+    }
+
     /**
      * @name organize
-     * @description organize algorithm
+     * @description organize call function
      */
     private bool organize () {
         debug ("ORGANIZE THREAD -> INIT");
         FolderSort folder_sort = FolderSort.factory (sort_by_type);
         folder_sort.sort (ref items, asc);
-
-        // window width
         int width       = parent_window.get_manager ().get_settings ().w;
         int height      = parent_window.get_manager ().get_settings ().h;
-        // left margin to start the grid
-        int left_margin = FolderArrangement.DEFAULT_EXTERNAL_MARGIN;
-
-        // cursors pixel
-        int cursor_x = left_margin;
-        int cursor_y = 0;
-        int padding  = parent_window.get_manager ().get_settings ().arrangement_padding;
-        Gee.HashMap <string, ItemSettings> managed_items = parent_window.get_manager ().get_settings ().get_items_parsed ();
-        Gee.List <Organize.ItemMove>       item_moves    = new Gee.ArrayList <Organize.ItemMove>();
-
-        for (int i = 0; i < items.length (); i++) {
-            ItemManager item = items.nth_data (i);
-
-            // moving in the view to the correct position
-            // parent_window.move_item (item.get_view (), cursor_x, cursor_y);
-            Gdk.Point px = Gdk.Point ();
-            px.x = cursor_x;
-            px.y = cursor_y;
-
-            // add the movement to the pending movements to be executed in the gtk thread
-            item_moves.add (new Organize.ItemMove (item.get_view (), px));
-
-            // saving settings for the new position
-            ItemSettings is = managed_items[item.get_file_name ()];
-
-            is.x            = cursor_x;
-            is.y            = cursor_y;
-
-            // moving the cursor horizontally
-            if (vertically) {
-                cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                if (cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH > height) {
-                    // we need to move to the next rows
-                    cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                    cursor_y = 0;
-                }
-            } else {
-                cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + left_margin > width) {
-                    // we need to move to the next rows
-                    cursor_x = left_margin;
-                    cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                }
-            }
+        bool checkright = parent_window.get_manager ().get_settings ().forceiconsright;
+        if (!checkright) {
+            organizeLogic(width, height, FolderArrangement.DEFAULT_EXTERNAL_MARGIN);
+        } else {
+            int rightSidedMargin = width - 100;
+            organizeLogic(width, height, rightSidedMargin);
         }
-
-
-        // only last to put the items in their positions, this is something can only be done in the gtk main thread
-        GLib.Idle.add_full (GLib.Priority.LOW, () => {
-            const int MAX = 5;
-            int cursor = 0;
-
-            while (cursor < MAX && item_moves.size > 0) {
-                Organize.ItemMove move = item_moves.remove_at (0);
-                UtilGtkAnimation.animate_move (move.view, move.point, 500, UtilFx.AnimationMode.EASE_IN_BACK);
-                cursor++;
-            }
-
-            if (item_moves.size > 0) {
-                // next iteration in the main gtk thread
-                return true;
-            } else {
-                parent_window.get_manager ().get_settings ().serialize_array (managed_items.values.to_array ());
-                parent_window.get_manager ().get_settings ().save ();
-
-                this.parent_window.hide_loading ();
-                debug ("ORGANIZE THREAD -> END");
-                return false;
-            }
-        });
-
         return true;
     }
 

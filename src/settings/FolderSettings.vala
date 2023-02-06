@@ -100,6 +100,17 @@ public class DesktopFolder.FolderSettings : PositionSettings {
             }
         }
     }
+    private bool _forceiconsright;
+    public bool forceiconsright {
+        get {
+            return _forceiconsright;
+        }
+        set {
+            if (_forceiconsright != value) {
+                _forceiconsright = value; flagChanged = true;
+            }
+        }
+    }
     private bool _lockpanel;
     public bool lockpanel {
         get {

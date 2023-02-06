@@ -206,6 +206,15 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     public bool are_items_locked () {
         return this.get_settings ().lockitems;
     }
+    
+    /**
+     * @name are_icons_forced_right
+     * @description return whether the icons are forced to right side of screen
+     * @return {bool} true->yes, the items are locked, false otherwise
+     */
+    public bool are_icons_forced_right () {
+        return this.get_settings ().forceiconsright;
+    }
 
     /**
      * @name load_folder_settings
