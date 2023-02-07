@@ -881,6 +881,15 @@ public class DesktopFolder.FolderWindow : Gtk.ApplicationWindow {
         this.manager.get_settings ().lockitems = !this.manager.get_settings ().lockitems;
         this.manager.get_settings ().save ();
     }
+    
+    /**
+     * @name on_toggle_forceiconsright
+     * @description the toggle force icons right event. The force icons right property must change
+     */
+    public void on_toggle_forceiconsright () {
+        this.manager.get_settings ().forceiconsright = !this.manager.get_settings ().forceiconsright;
+        this.manager.get_settings ().save ();
+    }
 
     /**
      * @name on_toggle_lockpanel
