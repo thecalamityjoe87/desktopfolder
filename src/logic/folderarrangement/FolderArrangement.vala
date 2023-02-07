@@ -22,6 +22,7 @@
 public interface DesktopFolder.FolderArrangement : Object {
     public static int DEFAULT_PADDING          = 10;
     public static int DEFAULT_EXTERNAL_MARGIN  = 10;
+    public static int RIGHT_EXTERNAL_MARGIN    = 100;
     public static int ARRANGEMENT_TYPE_FREE    = 1;
     public static int ARRANGEMENT_TYPE_GRID    = 2;
     public static int ARRANGEMENT_TYPE_MANAGED = 3;
@@ -176,7 +177,7 @@ private class DesktopFolder.Organize.Thread {
      * @name organizeLogic
      * @description organize algorithm
      */
-    private void organizeLogic (int width, int height, int margin) {
+    private bool organizeLogic (int width, int height, int margin) {
             FolderSort folder_sort = FolderSort.factory (sort_by_type);
             folder_sort.sort (ref items, asc);
             // cursors pixel
@@ -252,6 +253,7 @@ private class DesktopFolder.Organize.Thread {
                     return false;
                 }
             });
+            return true;
     }
 
     /**
@@ -267,7 +269,7 @@ private class DesktopFolder.Organize.Thread {
             organizeLogic(width, height, FolderArrangement.DEFAULT_EXTERNAL_MARGIN);
         } else {
             // crappy way of starting items on the right
-            int right_sided_margin = width - 100;
+            int right_sided_margin = width - FolderArrangement.RIGHT_EXTERNAL_MARGIN;
             organizeLogic(width, height, right_sided_margin);
         }
         return true;
