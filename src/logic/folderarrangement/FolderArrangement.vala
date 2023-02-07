@@ -177,10 +177,13 @@ private class DesktopFolder.Organize.Thread {
      * @description organize algorithm
      */
     private void organizeLogic (int width, int height, int margin) {
+            FolderSort folder_sort = FolderSort.factory (sort_by_type);
+            folder_sort.sort (ref items, asc);
             // cursors pixel
             int cursor_x = margin;
             int cursor_y = 0;
             int padding  = parent_window.get_manager ().get_settings ().arrangement_padding;
+            bool checkright = parent_window.get_manager ().get_settings ().forceiconsright;
             Gee.HashMap <string, ItemSettings> managed_items = parent_window.get_manager ().get_settings ().get_items_parsed ();
             Gee.List <Organize.ItemMove>       item_moves    = new Gee.ArrayList <Organize.ItemMove>();
 
@@ -206,8 +209,15 @@ private class DesktopFolder.Organize.Thread {
                 if (vertically) {
                     cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                     if (cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH > height) {
-                        // we need to move to the next rows
+                        // if were vertically aligning, then we need to move to next column
+                        // also, let's check if we're forcing icons to the right
+                        if (!checkright) {
                         cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                        } else {
+                            //We're starting on the right side, let's reverse position
+                            int reverse_cursor = 100;
+                            cursor_x = cursor_x - reverse_cursor;
+                        }
                         cursor_y = 0;
                     }
                 } else {
@@ -250,20 +260,18 @@ private class DesktopFolder.Organize.Thread {
      */
     private bool organize () {
         debug ("ORGANIZE THREAD -> INIT");
-        FolderSort folder_sort = FolderSort.factory (sort_by_type);
-        folder_sort.sort (ref items, asc);
         int width       = parent_window.get_manager ().get_settings ().w;
         int height      = parent_window.get_manager ().get_settings ().h;
         bool checkright = parent_window.get_manager ().get_settings ().forceiconsright;
         if (!checkright) {
             organizeLogic(width, height, FolderArrangement.DEFAULT_EXTERNAL_MARGIN);
         } else {
-            int rightSidedMargin = width - 100;
-            organizeLogic(width, height, rightSidedMargin);
+            // crappy way of starting items on the right
+            int right_sided_margin = width - 100;
+            organizeLogic(width, height, right_sided_margin);
         }
         return true;
     }
-
 }
 
 

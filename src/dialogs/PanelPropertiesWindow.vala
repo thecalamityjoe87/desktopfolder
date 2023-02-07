@@ -388,7 +388,7 @@ namespace DesktopFolder.Dialogs {
             general_grid.attach (settings_switch, 1, 2, 1, 1);
             settings_switch.set_active (this.manager.get_settings ().lockitems);
             settings_switch.notify["active"].connect (this.window.on_toggle_lockitems);
-            
+
             // force icons right
             general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_FORCE_ICONS_RIGHT), 0, 3, 1, 1);
             settings_switch = new SettingsSwitch ("force_icons_right");
