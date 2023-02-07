@@ -348,7 +348,7 @@ namespace DesktopFolder.Dialogs {
          */
         private Gtk.Widget get_properties_box () {
             var general_grid = new Gtk.Grid ();
-            general_grid.row_spacing    = 16;
+            general_grid.row_spacing    = 8;
             general_grid.column_spacing = 12;
 
             // The behavior section
