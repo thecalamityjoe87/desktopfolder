@@ -390,16 +390,19 @@ namespace DesktopFolder.Dialogs {
             settings_switch.notify["active"].connect (this.window.on_toggle_lockitems);
 
             // force icons right
-            general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_FORCE_ICONS_RIGHT), 0, 3, 1, 1);
-            settings_switch = new SettingsSwitch ("force_icons_right");
-            general_grid.attach (settings_switch, 1, 3, 1, 1);
-            settings_switch.set_active (this.manager.get_settings ().forceiconsright);
-            settings_switch.notify["active"].connect (this.window.on_toggle_forceiconsright);
+            // We add a conditional because we don't want this option for a panel window type
+            if (this.window.get_type() == typeof (DesktopFolder.DesktopWindow)){
+                general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_FORCE_ICONS_RIGHT), 0, 3, 1, 1);
+                settings_switch = new SettingsSwitch ("force_icons_right");
+                general_grid.attach (settings_switch, 1, 3, 1, 1);
+                settings_switch.set_active (this.manager.get_settings ().forceiconsright);
+                settings_switch.notify["active"].connect (this.window.on_toggle_forceiconsright);
+            }
 
             int top_offset = 0;
 
             if (this.window.get_type () != typeof (DesktopFolder.DesktopWindow)) {
-                top_offset = 0;
+                top_offset = 1;
                 // lock panel
                 general_grid.attach (new SettingsLabel (DesktopFolder.Lang.DESKTOPFOLDER_MENU_LOCK_PANEL), 0, 4, 1, 1);
                 settings_switch = new SettingsSwitch ("lock_panel");
