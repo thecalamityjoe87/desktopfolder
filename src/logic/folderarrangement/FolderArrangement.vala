@@ -110,8 +110,8 @@ public interface DesktopFolder.FolderArrangement : Object {
      * @param sort_by_type int the sort type @see FolderSort constants
      * @param asc bool to indicate ascendent sort or descent (true->ascendent)
      */
-    public static void organize_items (FolderWindow parent_window, ref List <ItemManager> items, int sort_by_type, bool asc, bool vertically) {
-        Organize.Thread fot = new Organize.Thread (parent_window, ref items, sort_by_type, asc, vertically);
+    public static void organize_items (FolderWindow parent_window, ref List <ItemManager> items, int sort_by_type, bool asc, bool vertically, bool checkright) {
+        Organize.Thread fot = new Organize.Thread (parent_window, ref items, sort_by_type, asc, vertically, checkright);
         fot.start ();
     }
 
@@ -141,8 +141,9 @@ private class DesktopFolder.Organize.Thread {
     private int sort_by_type;
     private bool asc;
     private bool vertically;
+    private bool checkright;
 
-    public Thread (FolderWindow parent_window, ref List <ItemManager> items, int sort_by_type, bool asc, bool vertically) {
+    public Thread (FolderWindow parent_window, ref List <ItemManager> items, int sort_by_type, bool asc, bool vertically, bool checkright) {
         this.parent_window = parent_window;
 
         // HELP! how to copy a ref variable in vala!?
@@ -155,6 +156,7 @@ private class DesktopFolder.Organize.Thread {
         this.asc          = asc;
         this.sort_by_type = sort_by_type;
         this.vertically   = vertically;
+        this.checkright   = checkright;
     }
 
     /**
@@ -184,7 +186,6 @@ private class DesktopFolder.Organize.Thread {
             int cursor_x = margin;
             int cursor_y = 0;
             int padding  = parent_window.get_manager ().get_settings ().arrangement_padding;
-            bool checkright = parent_window.get_manager ().get_settings ().forceiconsright;
             Gee.HashMap <string, ItemSettings> managed_items = parent_window.get_manager ().get_settings ().get_items_parsed ();
             Gee.List <Organize.ItemMove>       item_moves    = new Gee.ArrayList <Organize.ItemMove>();
 
@@ -264,7 +265,6 @@ private class DesktopFolder.Organize.Thread {
         debug ("ORGANIZE THREAD -> INIT");
         int width       = parent_window.get_manager ().get_settings ().w;
         int height      = parent_window.get_manager ().get_settings ().h;
-        bool checkright = parent_window.get_manager ().get_settings ().forceiconsright;
         if (!checkright) {
             organizeLogic(width, height, FolderArrangement.DEFAULT_EXTERNAL_MARGIN);
         } else {

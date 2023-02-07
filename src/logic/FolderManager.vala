@@ -410,7 +410,7 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
             this.organize_event_timeout = 0;
 
             bool asc = !this.settings.sort_reverse;
-            FolderArrangement.organize_items (this.view, ref this.items, this.settings.sort_by_type, asc, this.is_vertical_arragement ());
+            FolderArrangement.organize_items (this.view, ref this.items, this.settings.sort_by_type, asc, this.is_vertical_arragement (), this.are_icons_forced_right ());
 
             return false;
         });
