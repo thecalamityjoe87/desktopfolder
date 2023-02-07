@@ -274,6 +274,7 @@ public class DesktopFolder.FolderSettings : PositionSettings {
         this.textshadow          = true;
         this.align_to_grid       = false;
         this.lockitems           = false;
+        this.forceiconsright     = false;
         this.lockpanel           = false;
         this.arrangement_padding = FolderArrangement.DEFAULT_PADDING;
         this.arrangement_type    = FolderArrangement.ARRANGEMENT_TYPE_FREE;
