@@ -212,7 +212,7 @@ private class DesktopFolder.Organize.Thread {
                         // if were vertically aligning, then we need to move to next column
                         // also, let's check if we're forcing icons to the right
                         if (!checkright) {
-                        cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                            cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                         } else {
                             //We're starting on the right side, let's reverse position
                             int reverse_cursor = 100;
