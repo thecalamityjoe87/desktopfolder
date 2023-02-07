@@ -884,11 +884,12 @@ public class DesktopFolder.FolderWindow : Gtk.ApplicationWindow {
     
     /**
      * @name on_toggle_forceiconsright
-     * @description the toggle force icons right event. The force icons right property must change
+     * @description the toggle force icons right event. The force icons right property must change. Treat this as a dynamic event
      */
     public void on_toggle_forceiconsright () {
         this.manager.get_settings ().forceiconsright = !this.manager.get_settings ().forceiconsright;
         this.manager.get_settings ().save ();
+        this.manager.organize_panel_items ();
     }
 
     /**
