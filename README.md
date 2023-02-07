@@ -28,7 +28,7 @@ If you use elementary OS, you can get it directly from the AppCenter.
 
 [![Get it on AppCenter](https://appcenter.elementary.io/badge.svg)](https://appcenter.elementary.io/com.github.spheras.desktopfolder)
 
-Our main target is elementary, but Desktop Folder should also work on Ubuntu and GNOME 3. You should use the latest [.deb release](https://github.com/spheras/desktopfolder/releases). To install the .deb with apt:
+Our main target is elementary, but Desktop Folder should also work on Ubuntu and GNOME 3. You should use the latest [.deb release](https://github.com/calamityjoe87/desktopfolder/releases). To install the .deb with apt:
 
 `sudo apt install ./com.github.spheras.desktopfolder_[version]_amd64.deb`
 
