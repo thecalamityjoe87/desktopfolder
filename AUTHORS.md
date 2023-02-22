@@ -6,6 +6,8 @@
 
 * **[aljelly](https://github.com/aljelly)**
 
+* **[Isaac (calamityjoe87)](https://github.com/calamityjoe87)**
+
 # Translators  
 
 * **[welaq](https://github.com/welaq)**
