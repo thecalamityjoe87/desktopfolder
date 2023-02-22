@@ -233,7 +233,7 @@ private class DesktopFolder.Organize.Thread {
                     } else {
                             // use reverse logic to set create new items from right to left
                             if (cursor_x > cursor_x + margin) {
-                                 if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + margin > width) {
+                                if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + margin > width) {
                                     cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                                     cursor_x = margin;
                                 }
@@ -241,7 +241,7 @@ private class DesktopFolder.Organize.Thread {
                                     cursor_x = margin - reverse_cursor;
                                     margin = cursor_x;
                                     cursor_y = 0;
-                                }
+                            }
                     }
                 }
             }
