@@ -186,6 +186,7 @@ private class DesktopFolder.Organize.Thread {
             int cursor_x = margin;
             int cursor_y = 0;
             int reverse_cursor = 100;
+            int left_bounds = 200;
             int padding  = parent_window.get_manager ().get_settings ().arrangement_padding;
             Gee.HashMap <string, ItemSettings> managed_items = parent_window.get_manager ().get_settings ().get_items_parsed ();
             Gee.List <Organize.ItemMove>       item_moves    = new Gee.ArrayList <Organize.ItemMove>();
@@ -223,25 +224,23 @@ private class DesktopFolder.Organize.Thread {
                         cursor_y = 0;
                     }
                 } else {
-                    cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                     if (!checkright) {
+                        cursor_x = cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                         if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + margin > width) {
-                            // we need to move to the next rows
+                            // we need to move to the next row
                             cursor_x = margin;
                             cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                         }
                     } else {
-                            // use reverse logic to set create new items from right to left
-                            if (cursor_x > cursor_x + margin) {
-                                if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + margin > width) {
-                                    cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                                    cursor_x = margin;
-                                }
-                            } else {
-                                    cursor_x = margin - reverse_cursor;
-                                    margin = cursor_x;
-                                    cursor_y = 0;
-                            }
+                        // reverse logic when moving right to left. create bounds to stop cursor_x from moving off screen.
+                        if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding < left_bounds) {
+                            cursor_x = width - reverse_cursor;
+                            cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                        } else {
+                            // set margin then move cursor_x left
+                            margin = cursor_x;
+                            cursor_x = cursor_x - reverse_cursor;
+                        }
                     }
                 }
             }
