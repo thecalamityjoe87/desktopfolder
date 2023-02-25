@@ -147,6 +147,8 @@ namespace DesktopFolder.Lang {
     // panel properties - Panel over Desktop title
     public const string PANELPROPERTIES_DESKTOP_ICONS                   = _("Icons on desktop:");
     // panel properties - Panel over Desktop title
+    public const string PANELPROPERTIES_DESKTOP_SHOW_MOUNTED_DRIVES     = _("Show mounted drives:");
+    // panel properties - Panel over Desktop title
     public const string PANELPROPERTIES_DESKTOP_PANEL                   = _("Enable desktop:");
     // panel properties - Panel over desktop description
     public const string PANELPROPERTIES_DESKTOP_PANEL_DESCRIPTION       = _("This change will require you to log out and in again");

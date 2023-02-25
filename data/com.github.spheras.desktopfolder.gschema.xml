@@ -19,6 +19,11 @@
       <summary>Icons on Desktop Panel</summary>
       <description>Whether to show icons on Desktop Panel or not</description>
     </key>
+    <key name="show-mounted-drives" type="b">
+      <default>true</default>
+      <summary>Show mounted drives on desktop</summary>
+      <description>Whether to show mounted drives on Desktop Panel or not</description>
+    </key>
     <key name="desktop-panel" type="b">
       <default>true</default>
       <summary>Desktop Panel over Desktop</summary>

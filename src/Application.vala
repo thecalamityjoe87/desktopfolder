@@ -32,10 +32,12 @@ public class DesktopFolderApp : Gtk.Application {
     private bool single_click                   = false;
     private const string SHOW_DESKTOPPANEL_KEY  = "desktop-panel";
     private const string SHOW_DESKTOPICONS_KEY  = "icons-on-desktop";
+    private const string SHOW_MOUNTEDDRIVES_KEY = "show-mounted-drives";
     private const string SHOW_DESKTOPFOLDER_KEY = "show-desktopfolder";
 
     private bool show_desktoppanel              = false;
     private bool show_desktopicons              = false;
+    private bool show_mounteddrives             = false;
 
     private bool desktop_visible                = false;
 
@@ -164,6 +166,9 @@ public class DesktopFolderApp : Gtk.Application {
 
         settings.changed[SHOW_DESKTOPICONS_KEY].connect (on_show_desktopicons_changed);
         on_show_desktopicons_changed ();
+        
+        settings.changed[SHOW_MOUNTEDDRIVES_KEY].connect (on_show_mounteddrives_changed);
+        on_show_mounteddrives_changed ();
 
         create_shortcut ();
 
@@ -346,6 +351,24 @@ public class DesktopFolderApp : Gtk.Application {
             }
         }
     }
+    
+
+    /**
+     * @name on_show_showmounteddrives_changed
+     * @description detect when desktopicons key is toggled
+     */
+    private void on_show_mounteddrives_changed () {
+        this.show_mounteddrives = settings.get_boolean (SHOW_MOUNTEDDRIVES_KEY);
+        // debug (@"called, show_desktoppanel: $(this.show_desktoppanel), show_desktopicons: $show_desktopicons");
+        if (this.show_desktoppanel) {
+            if (this.show_mounteddrives) {
+                this.desktop.show_items ();
+            } else {
+                // debug ("calling hide_items");
+                this.desktop.hide_items ();
+            }
+        }
+    }
 
     /**
      * @name get_desktopicons_enabled
@@ -353,6 +376,14 @@ public class DesktopFolderApp : Gtk.Application {
      */
     public bool get_desktopicons_enabled () {
         return show_desktopicons;
+    }
+    
+    /**
+     * @name get_showmounteddrives_enabled
+     * @description detect when desktopicons key is toggled
+     */
+    public bool get_showmounteddrives_enabled () {
+        return show_mounteddrives;
     }
 
     /**

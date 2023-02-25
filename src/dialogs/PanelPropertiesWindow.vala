@@ -486,6 +486,23 @@ namespace DesktopFolder.Dialogs {
                     this.set_property_page_sensitivity (!desktopicons_enabled);
                 }
             });
+            
+            
+            general_grid.attach (new SettingsLabel (DesktopFolder.Lang.PANELPROPERTIES_DESKTOP_SHOW_MOUNTED_DRIVES), 0, 2, 1, 1);
+
+            settings_switch = new SettingsSwitch ("show-mounted-drives");
+            settings_switch.halign     = Gtk.Align.START;
+            settings_switch.margin_end = 8;
+            general_grid.attach (settings_switch, 1, 2, 1, 1);
+
+            settings_switch.set_active (settings.get_boolean ("show-mounted-drives"));
+            settings_switch.notify["active"].connect (() => {
+                bool showmounteddrives_enabled = settings.get_boolean ("show-mounted-drives");
+                settings.set_boolean ("show-mounted-drives", !showmounteddrives_enabled);
+                if (this.window.get_type () == typeof (DesktopFolder.DesktopWindow)) {
+                    this.set_property_page_sensitivity (!showmounteddrives_enabled);
+                }
+            });
 
             // Uncomment the following block when the option to remove DesktopWindow is wanted again
             /*

@@ -15,6 +15,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 protected errordomain FolderManagerIOError {
     FILE_EXISTS,
     MOVE_ERROR
@@ -584,6 +585,36 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
         }
 
         return new_name;
+    }
+    
+    /**
+     * @name test bed for show mounted volumes
+     * @description create a new folder inside this folder
+     * @param string name the name of the new folder
+     * @param int x the x position of the new folder
+     * @param int y the y position of the new folder
+     */
+    public bool show_mounted_drives (int x, int y) {
+        VolumeMonitor monitor = VolumeMonitor.get ();
+        
+        List<Drive> drives = monitor.get_connected_drives ();
+        
+        // cancelling the current monitor
+        this.monitor.cancel ();
+
+        try {
+            monitor.drive_changed.connect ((drive) => {
+            // forcing the sync of the files as a new folder has been created
+                this.sync_files (x, y);
+	        });
+
+            // monitoring again
+            this.monitor_folder ();
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+            Util.show_error_dialog ("Error", e.message);
+        }
+        return false;
     }
 
     /**
