@@ -543,6 +543,30 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     }
 
     /**
+     * @name check_for_mounted_drives
+     * @description check for the path of mounted drives
+     * @param int x the x position of the new folder
+     * @param int y the y position of the new folder
+     */
+    public void check_for_mounted_drives () {
+        int x = 0;
+        int y = 0;
+        VolumeMonitor monitor = VolumeMonitor.get ();
+        List<Mount> mounts = monitor.get_mounts ();
+
+            try {
+                foreach (Mount mount in mounts) {
+		            string path = mount.get_root().get_path();
+		            print ("root: %s\n", path);
+                    this.create_mounted_drive_link (path,x,y);
+                }
+            } catch (Error e) {
+                stderr.printf ("Error: %s\n", e.message);
+                Util.show_error_dialog ("Error", e.message);
+            }
+    }
+
+    /**
      * @name create_new_folder_inside
      * @description function to create inside the recent created folder whatever is needed
      * @param {string} folder_path the folder which is being created
@@ -587,36 +611,6 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
         return new_name;
     }
     
-    /**
-     * @name test bed for show mounted volumes
-     * @description create a new folder inside this folder
-     * @param string name the name of the new folder
-     * @param int x the x position of the new folder
-     * @param int y the y position of the new folder
-     */
-    public bool show_mounted_drives (int x, int y) {
-        VolumeMonitor monitor = VolumeMonitor.get ();
-        
-        List<Drive> drives = monitor.get_connected_drives ();
-        
-        // cancelling the current monitor
-        this.monitor.cancel ();
-
-        try {
-            monitor.drive_changed.connect ((drive) => {
-            // forcing the sync of the files as a new folder has been created
-                this.sync_files (x, y);
-	        });
-
-            // monitoring again
-            this.monitor_folder ();
-        } catch (Error e) {
-            stderr.printf ("Error: %s\n", e.message);
-            Util.show_error_dialog ("Error", e.message);
-        }
-        return false;
-    }
-
     /**
      * @name create_new_text_file
      * @description create a new text file inside this folder
@@ -678,6 +672,42 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
             this.sync_files (x, y);
             // monitoring again
             this.monitor_folder ();
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+            Util.show_error_dialog ("Error", e.message);
+        }
+    }
+
+    /**
+     * @name create_mounted_drive_link
+     * @description create a new link inside this folder
+     * @param string target the target of the new link file
+     * @param int x the x position of the new file
+     * @param int y the y position of the new file
+     */
+    public void create_mounted_drive_link (string target, int x, int y) {
+        // cancelling the current monitor
+        this.monitor.cancel ();
+
+        // we create the text file with a touch command
+        try {
+            var file    = File.new_for_path (target);
+            var name    = file.get_basename ();
+            string folder_path = this.get_absolute_path () + name;
+
+            if (FileUtils.test (folder_path, FileTest.EXISTS)) {
+                print ("Error: link already exists for drive %s\n", name);
+            } else {
+                var command = "ln -s \"" + target + "\" \"" + this.get_absolute_path () + "/" + name + "\"";
+                debug("command: %s"+command);
+                var appinfo = AppInfo.create_from_commandline (command, null, AppInfoCreateFlags.SUPPORTS_URIS);
+                appinfo.launch_uris (null, null);
+
+                // forcing the sync of the files as a new lynk has been created
+                this.sync_files (x, y);
+                // monitoring again
+                this.monitor_folder ();
+            }
         } catch (Error e) {
             stderr.printf ("Error: %s\n", e.message);
             Util.show_error_dialog ("Error", e.message);

@@ -108,6 +108,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     public bool is_link () {
         var file = this.get_file ();
         var path = file.get_path ();
+        print (path);
         return FileUtils.test (path, FileTest.IS_SYMLINK);
     }
 
@@ -409,6 +410,14 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      */
     public bool is_folder () {
         return FileUtils.test (this.get_absolute_path (), FileTest.IS_DIR);
+    }
+    
+    /**
+     * @name is_mounted_drive
+     * @description check whether the item is a folder or not
+     * @return bool true->the item is a folder
+     
+    public bool is_mounted_drive () {
     }
 
     /**

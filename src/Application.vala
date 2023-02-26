@@ -362,11 +362,8 @@ public class DesktopFolderApp : Gtk.Application {
         // debug (@"called, show_desktoppanel: $(this.show_desktoppanel), show_desktopicons: $show_desktopicons");
         if (this.show_desktoppanel) {
             if (this.show_mounteddrives) {
-                this.desktop.show_items ();
-            } else {
-                // debug ("calling hide_items");
-                this.desktop.hide_items ();
-            }
+                this.desktop.show_mounted_drives ();
+            } 
         }
     }
 

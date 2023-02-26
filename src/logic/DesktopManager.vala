@@ -76,6 +76,19 @@ public class DesktopFolder.DesktopManager : DesktopFolder.FolderManager {
     }
 
     /**
+     * @name show_mounted_drives
+     * @description shows the items
+     */
+    public void show_mounted_drives () {
+        // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
+        if (this.get_application ().get_desktop_visibility ()) {
+            debug ("showing mounted drives");
+            base.check_for_mounted_drives ();
+            base.view.refresh ();
+        }
+    }
+
+    /**
      * @name hide_items
      * @description hides the items
      */
