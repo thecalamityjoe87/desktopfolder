@@ -77,7 +77,7 @@ public class DesktopFolder.DesktopManager : DesktopFolder.FolderManager {
 
     /**
      * @name show_mounted_drives
-     * @description shows the items
+     * @description shows mounted drives on desktop
      */
     public void show_mounted_drives () {
         // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
@@ -85,6 +85,18 @@ public class DesktopFolder.DesktopManager : DesktopFolder.FolderManager {
             debug ("showing mounted drives");
             base.check_for_mounted_drives ();
             base.view.refresh ();
+        }
+    }
+    
+    /**
+     * @name destroy_mounted_drives
+     * @description removes the drives off desktop
+     */
+    public void destroy_mounted_drives () {
+        // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
+        if (this.get_application ().get_desktop_visibility ()) {
+            debug ("destroying all mounted drives");
+            base.hide_mounted_drives ();
         }
     }
 

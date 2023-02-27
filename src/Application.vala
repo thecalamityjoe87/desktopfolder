@@ -360,11 +360,12 @@ public class DesktopFolderApp : Gtk.Application {
     private void on_show_mounteddrives_changed () {
         this.show_mounteddrives = settings.get_boolean (SHOW_MOUNTEDDRIVES_KEY);
         // debug (@"called, show_desktoppanel: $(this.show_desktoppanel), show_desktopicons: $show_desktopicons");
-        if (this.show_desktoppanel) {
             if (this.show_mounteddrives) {
                 this.desktop.show_mounted_drives ();
-            } 
-        }
+            } else {
+                // debug ("call destroy_mounted_drives")
+                this.desktop.destroy_mounted_drives ();
+            }
     }
 
     /**
@@ -428,6 +429,9 @@ public class DesktopFolderApp : Gtk.Application {
         debug ("MOUNT FILE SYSTEM CHANGED");
         for (int i = 0; i < this.folders.length (); i++) {
             this.folders.nth_data (i).on_mount_changed ();
+        }
+        if (show_mounteddrives){
+            this.desktop.show_mounted_drives ();
         }
         if (this.desktop != null) {
             this.desktop.on_mount_changed ();

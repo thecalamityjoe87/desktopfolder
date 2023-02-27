@@ -459,6 +459,27 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     }
 
     /**
+     * @name trash_mounted_drives_items
+     * @description destroys all symlinked mounted drives
+     */
+    public void trash_mounted_drives_items () {
+        if (this.folder.is_sync_running ()) {
+            return;
+        }
+
+        try {
+            if (this.is_mounted_drive_link ()) {
+                File file = File.new_for_path (this.get_absolute_path ());
+                file.delete ();
+            } 
+            this.on_delete ();
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+            Util.show_error_dialog ("Error", e.message);
+        }
+    }
+
+    /**
      * @name trash
      * @description trash the file or folder associated
      */

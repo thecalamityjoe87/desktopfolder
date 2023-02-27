@@ -888,29 +888,39 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
         item.show ();
         menu.append (item);
 
-        item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_CUT);
-        item.activate.connect ((item) => { this.manager.cut (); });
-        item.show ();
-        menu.append (item);
+        if (this.manager.is_mounted_drive_link ()) { 
+        } else {
+            item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_CUT);
+            item.activate.connect ((item) => { this.manager.cut (); });
+            item.show ();
+            menu.append (item);
 
-        item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_COPY);
-        item.activate.connect ((item) => { this.manager.copy (); });
-        item.show ();
-        menu.append (item);
+            item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_COPY);
+            item.activate.connect ((item) => { this.manager.copy (); });
+            item.show ();
+            menu.append (item);
 
-        item = new MenuItemSeparator ();
-        item.show ();
-        menu.append (item);
+            item = new MenuItemSeparator ();
+            item.show ();
+            menu.append (item);
+        }
 
         item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_RENAME);
         item.activate.connect ((item) => { this.label.start_editing (); });
         item.show ();
         menu.append (item);
 
-        item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_TRASH);
-        item.activate.connect ((item) => { this.manager.trash_selected (); });
-        item.show ();
-        menu.append (item);
+        if (this.manager.is_mounted_drive_link ()) {
+            item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_EJECT);
+            item.activate.connect ((item) => { this.manager.trash_selected (); });
+            item.show ();
+            menu.append (item);
+        } else {
+            item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_TRASH);
+            item.activate.connect ((item) => { this.manager.trash_selected (); });
+            item.show ();
+            menu.append (item);
+        }
 
         // if (this.manager.is_executable ()) { //only allowing this to executable files
         item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_CHANGEICON);

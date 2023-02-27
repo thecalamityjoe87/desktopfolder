@@ -115,7 +115,7 @@ public class DesktopFolder.DesktopWindow : DesktopFolder.FolderWindow {
         // Forcing desktop mode to avoid minimization in certain extreme cases without on_press signal!
         // TODO: Is there a way to make a desktop window resizable and movable?
 
-        bool show_icon_options = this.manager.get_application ().get_desktoppanel_enabled () && this.manager.get_application ().get_desktopicons_enabled () && this.manager.get_application ().get_showmounteddrives_enabled () && this.manager.get_application ().get_desktop_visibility ();
+        bool show_icon_options = this.manager.get_application ().get_desktoppanel_enabled () && this.manager.get_application ().get_desktopicons_enabled () && this.manager.get_application ().get_desktop_visibility ();
 
         this.type_hint    = Gdk.WindowTypeHint.DESKTOP;
         this.context_menu = new Gtk.Menu ();

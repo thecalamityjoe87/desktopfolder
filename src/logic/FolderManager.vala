@@ -529,6 +529,16 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     }
 
     /**
+     * @name hide_mounted_drives
+     * @description hide all mounted drives in this folder
+     */
+    public virtual void hide_mounted_drives () {
+        foreach (var item in items) {
+            item.trash_mounted_drives_items ();
+        }
+    }
+
+    /**
      * @name open_terminal_here
      * @description open terminal here, works in folder & on Desktop
      */
@@ -545,8 +555,7 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     /**
      * @name check_for_mounted_drives
      * @description check for the path of mounted drives
-     * @param int x the x position of the new folder
-     * @param int y the y position of the new folder
+     * @param int x and int y are dummy integers
      */
     public void check_for_mounted_drives () {
         int x = 0;
@@ -554,16 +563,16 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
         VolumeMonitor monitor = VolumeMonitor.get ();
         List<Mount> mounts = monitor.get_mounts ();
 
-            try {
-                foreach (Mount mount in mounts) {
-		            string path = mount.get_root().get_path();
-		            print ("root: %s\n", path);
-                    this.create_mounted_drive_link (path,x,y);
-                }
-            } catch (Error e) {
+        try {
+            foreach (Mount mount in mounts) {
+		        string path = mount.get_root().get_path();
+		        print ("root: %s\n", path);
+                this.create_mounted_drive_link (path,x,y);
+            }
+        } catch (Error e) {
                 stderr.printf ("Error: %s\n", e.message);
                 Util.show_error_dialog ("Error", e.message);
-            }
+        }
     }
 
     /**

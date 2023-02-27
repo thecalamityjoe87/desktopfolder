@@ -103,6 +103,8 @@ namespace DesktopFolder.Lang {
     // Item Menu - trash the file/folder
     public const string ITEM_MENU_TRASH            = _("Move to Trash");
     // Item Menu - delete the file/folder
+    public const string ITEM_MENU_EJECT            = _("Eject");
+    // Item Menu - delete the file/folder
     public const string ITEM_MENU_DELETE           = _("Delete");
     // Item Menu - change icon
     public const string ITEM_MENU_CHANGEICON       = _("Change Icon");
