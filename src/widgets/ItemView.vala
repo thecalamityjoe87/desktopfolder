@@ -166,7 +166,13 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
         try {
             Gtk.Image newImage;
 
-            if (forced == null) {
+            /* This is the best I can do here for this. Check to see if we
+                have a mounted drive link and then set the icon.
+            */
+            if (forced == null && this.manager.is_mounted_drive_link()) {
+                GLib.Icon gicon_drive = GLib.Icon.new_for_string ("media-removable");
+                newImage = new Gtk.Image.from_gicon (gicon_drive, Gtk.IconSize.DIALOG);
+            } else if (forced == null) {
                 newImage = this.calculate_icon ();
             } else {
                 GLib.Icon gicon = GLib.Icon.new_for_string ("folder-open");
@@ -297,6 +303,7 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
                 Gtk.Image icon;
                 icon = new Gtk.Image.from_icon_name ("image-x-generic", Gtk.IconSize.DIALOG);
                 return icon;
+                //return icon;
             } catch (Error ee) {
                 stderr.printf ("Error: %s\n", ee.message);
                 Util.show_error_dialog ("Error", ee.message);

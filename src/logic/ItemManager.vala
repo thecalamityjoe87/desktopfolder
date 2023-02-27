@@ -35,6 +35,8 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     /** flag to indicate that the file doesn't exist.. and need to be rechecked */
     private bool flag_dont_exist                 = false;
 
+    FileInfo general_info;
+    
     /**
      * @constructor
      * @param string file_name the name of the file/folder that this item represents
@@ -108,7 +110,6 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     public bool is_link () {
         var file = this.get_file ();
         var path = file.get_path ();
-        print (path);
         return FileUtils.test (path, FileTest.IS_SYMLINK);
     }
 
@@ -413,11 +414,20 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     }
     
     /**
-     * @name is_mounted_drive
-     * @description check whether the item is a folder or not
-     * @return bool true->the item is a folder
-     
-    public bool is_mounted_drive () {
+     * @name is_mounted_drive_link
+     * @description check whether the item is a mounted drive (symlink) or not
+     * @return bool true->the item is a mounted drive
+     */
+    public bool is_mounted_drive_link () {
+        var file = this.get_file ();
+        var path = file.get_path ();
+        general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
+        string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
+        //debug (target_path);
+        if (target_path.contains("media") || target_path.contains("mnt")) {
+            return true;
+        } else
+            return false;
     }
 
     /**
