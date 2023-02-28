@@ -35,8 +35,16 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     /** flag to indicate that the file doesn't exist.. and need to be rechecked */
     private bool flag_dont_exist                 = false;
 
+
+    /** Declare stuff needed for handling our volumes and mounts */
+    public GLib.Drive drive;
+    public GLib.Mount mount;
+    public GLib.Volume volume;
+    private GLib.SList<GLib.Volume> volumes;
+    private GLib.SList<GLib.Mount> mounts;
+
     FileInfo general_info;
-    
+
     /**
      * @constructor
      * @param string file_name the name of the file/folder that this item represents
@@ -56,6 +64,18 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
         this.selected      = false;
         this.view          = new ItemView (this);
         this.dnd_behaviour = new DragnDrop.DndBehaviour (this, true, this.is_folder ());
+    }
+
+    /**
+     * @name device
+     * @description sets our controls for mount, device and volumes 
+     */
+    public void device (GLib.Drive drive, GLib.Mount mount, GLib.Volume volume) {
+        this.drive = drive;
+        this.mount = mount;
+        this.volume = volume;
+        this.volumes = new GLib.SList<GLib.Volume>();
+        this.mounts = new GLib.SList<GLib.Mount>();
     }
 
     /**
@@ -423,7 +443,6 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
         var path = file.get_path ();
         general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
-        string target_type = general_info.get_icon ().to_string ();
         try {
             if (target_path.contains("media") || target_path.contains("mnt")) {
                 return true;
@@ -438,29 +457,29 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     /**
      * @name mounted_drive_link_type
      * @description check what type the mounted drive (symlink) is
-     * 
      */
     public string mounted_drive_link_type () {
         var file = this.get_file ();
-        var path = file.get_path ();
         general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
         /* I'm not proud of this but it works */
-        string type_usb = "drive-harddisk-usb";
-        string type_hdd = "drive-harddisk";
+        string type_usb = "drive-harddisk-usb"; // normal icon for removable drive
+        string type_hdd = "drive-harddisk"; // normal icon for hard disks
 	    VolumeMonitor monitor = VolumeMonitor.get ();
-	    List<Mount> mounts = monitor.get_mounts ();
 
         try {
-            if (target_path.contains("media") || target_path.contains("mnt"))
-            foreach (Mount mount in mounts) {
-		        if (target_path in mount.get_root ().get_path ()) {
-		            if (mount.get_icon ().to_string().contains(type_usb)) {
-		               return "type_removable";
-		            } else if (mount.get_icon ().to_string().contains(type_hdd)) {
-		                return "type_hdd";
-		            } else {
-		                return "type_other";
+            /* crappy way of making sure the symlink is a mounted drive or not */
+            if (target_path.contains("media") || target_path.contains("mnt") || target_path.contains("proc"))
+                foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) monitor.get_mounts ()) {
+                /* check to see if our target_path matches the mount we're trying to test */
+		            if (target_path in mount.get_root ().get_path ()) {
+		                if (mount.get_icon ().to_string().contains(type_usb)) {
+		                    return "type_removable";
+		                } else if (mount.get_icon ().to_string().contains(type_hdd)) {
+		                    return "type_hdd";
+		                } else {
+		                    /* TO-DO: will need to handle other types like network drives */
+		                    return "type_other";
 		            }
 		        }
 		    }
@@ -526,6 +545,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
             try {
                 if (this.is_mounted_drive_link ()) {
                     File file = File.new_for_path (this.get_absolute_path ());
+                    // completely destry our symlink
                     file.delete ();
                 }
             } catch (Error e) {
@@ -575,21 +595,52 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
             }
         }
     }
-    
+
+    //public signal void removed ();
+    //public signal void ejected ();
+    public signal void unmounted ();
+
+    /**
+     * @name mount_ejection
+     * @description ejects our mounted drive
+     */
+    private async void mount_ejection (string target_path) {
+        Gtk.MountOperation op = new Gtk.MountOperation(null);
+        bool ok = true;
+	    VolumeMonitor monitor = VolumeMonitor.get ();
+
+        foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) monitor.get_mounts ()) {
+            try {
+                /* check to see if our target_path matches the mount we're trying to remove */
+                if (target_path in mount.get_root ().get_path ()) {
+                    mount.eject_with_operation (GLib.MountUnmountFlags.NONE, op, null);
+                    debug("UNMOUNT OK");
+                }
+            } catch (GLib.Error err2) {
+                    debug("UNMOUNT ERROR: "+err2.message);
+                    ok = false;
+            }
+            if (ok) { this.unmounted(); }
+        }
+	}
+
     /**
      * @name eject_mounted_drive
-     * @descriptionsend to trash the mounted symlink and eject the drive
+     * @description send to trash the mounted symlink and eject the drive
      */
     public void eject_mounted_drive () {
+        var target_file = this.get_file ();
+        general_info  = target_file.query_info ("*", FileQueryInfoFlags.NONE);
+        string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
         if (this.folder.is_sync_running ()) {
             return;
         }
-        
+
         if (this.is_mounted_drive_link_exists ()) {
             try {
                 if (this.is_mounted_drive_link ()) {
                     File file = File.new_for_path (this.get_absolute_path ());
-                    
+                    this.mount_ejection(target_path);
                     file.delete ();
                 }
             } catch (Error e) {

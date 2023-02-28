@@ -30,8 +30,6 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
     private bool flagMoved           = false;
     /** the manager of this item icon */
     private ItemManager manager;
-    /** the manager of folders */
-    private FolderManager folder_manager;
     /** the context menu for this item */
     private Gtk.Menu menu = null;
 
@@ -920,7 +918,7 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
 
         if (this.manager.is_mounted_drive_link ()) {
             item = new Gtk.MenuItem.with_label (DesktopFolder.Lang.ITEM_MENU_EJECT);
-            item.activate.connect ((item) => { this.manager.trash_selected (); });
+            item.activate.connect ((item) => { this.manager.eject_mounted_drive (); });
             item.show ();
             menu.append (item);
         } else {
