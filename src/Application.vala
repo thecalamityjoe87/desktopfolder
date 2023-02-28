@@ -220,6 +220,10 @@ public class DesktopFolderApp : Gtk.Application {
         this.volume_monitor.volume_changed.connect ((volume) => {
             this.on_mount_changed ();
         });
+        this.volume_monitor.mount_removed.connect ((mount) => {
+		    this.on_mount_changed ();
+	    });
+
 
         Timeout.add (500, () => { // 1000
             this.toggle_desktop_visibility ();
@@ -426,11 +430,17 @@ public class DesktopFolderApp : Gtk.Application {
      * @description event to detect when the mount file system has been changed, probably we need to recheck files existence
      */
     public void on_mount_changed () {
+        List<Mount> mounts = volume_monitor.get_mounts ();
         debug ("MOUNT FILE SYSTEM CHANGED");
         for (int i = 0; i < this.folders.length (); i++) {
             this.folders.nth_data (i).on_mount_changed ();
         }
         if (show_mounteddrives){
+            foreach (Mount mount in mounts) {
+            }
+            this.volume_monitor.mount_removed.connect ((mount) => {
+                 this.desktop.destroy_mounted_drives();
+	        });
             this.desktop.show_mounted_drives ();
         }
         if (this.desktop != null) {

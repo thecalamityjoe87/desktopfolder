@@ -232,14 +232,16 @@ private class DesktopFolder.Organize.Thread {
                             cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
                         }
                     } else {
-                        // reverse logic when moving right to left. create bounds to stop cursor_x from moving off screen.
-                        if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding < left_bounds) {
-                            cursor_x = width - reverse_cursor;
-                            cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
-                        } else {
-                            // set margin then move cursor_x left
-                            margin = cursor_x;
-                            cursor_x = cursor_x - reverse_cursor;
+                        if (checkright) {
+                            // reverse logic when moving right to left. create bounds to stop cursor_x from moving off screen.
+                            if (cursor_x + DesktopFolder.ICON_DEFAULT_WIDTH + padding < left_bounds) {
+                                cursor_x = width - reverse_cursor;
+                                cursor_y = cursor_y + DesktopFolder.ICON_DEFAULT_WIDTH + padding;
+                            } else {
+                                // set margin then move cursor_x left
+                                margin = cursor_x;
+                                cursor_x = cursor_x - reverse_cursor;
+                            }
                         }
                     }
                 }

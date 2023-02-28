@@ -30,6 +30,8 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
     private bool flagMoved           = false;
     /** the manager of this item icon */
     private ItemManager manager;
+    /** the manager of folders */
+    private FolderManager folder_manager;
     /** the context menu for this item */
     private Gtk.Menu menu = null;
 
@@ -169,9 +171,15 @@ public class DesktopFolder.ItemView : Gtk.EventBox {
             /* This is the best I can do here for this. Check to see if we
                 have a mounted drive link and then set the icon.
             */
-            if (forced == null && this.manager.is_mounted_drive_link()) {
-                GLib.Icon gicon_drive = GLib.Icon.new_for_string ("media-removable");
-                newImage = new Gtk.Image.from_gicon (gicon_drive, Gtk.IconSize.DIALOG);
+            if (forced == null && this.manager.is_mounted_drive_link() && this.manager.mounted_drive_link_type () == "type_removable" ) {
+                    GLib.Icon gicon_drive = GLib.Icon.new_for_string ("media-removable");
+                    newImage = new Gtk.Image.from_gicon (gicon_drive, Gtk.IconSize.DIALOG);
+            } else if (forced == null && this.manager.is_mounted_drive_link() && this.manager.mounted_drive_link_type () == "type_hdd" ) {
+                    GLib.Icon gicon_drive = GLib.Icon.new_for_string ("drive-harddisk");
+                    newImage = new Gtk.Image.from_gicon (gicon_drive, Gtk.IconSize.DIALOG);
+            } else if (forced == null && this.manager.is_mounted_drive_link() && this.manager.mounted_drive_link_type () == "type_other" ) {
+                    GLib.Icon gicon_drive = GLib.Icon.new_for_string ("text-x-generic");
+                    newImage = new Gtk.Image.from_gicon (gicon_drive, Gtk.IconSize.DIALOG);
             } else if (forced == null) {
                 newImage = this.calculate_icon ();
             } else {

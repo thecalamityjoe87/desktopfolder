@@ -50,6 +50,8 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     private FolderSync.Thread sync_thread        = null;
     /** the id for the organize event timer */
     private uint organize_event_timeout;
+    protected ItemManager item_manager = null;
+    
 
 
     /**
@@ -532,9 +534,14 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
      * @name hide_mounted_drives
      * @description hide all mounted drives in this folder
      */
-    public virtual void hide_mounted_drives () {
-        foreach (var item in items) {
-            item.trash_mounted_drives_items ();
+    public void hide_mounted_drives () {
+        try {
+            foreach (var item in items) {
+                item.destroy_mounted_drives_items ();
+            }
+        } catch (Error e) {
+                stderr.printf ("Error: %s\n", e.message);
+                Util.show_error_dialog ("Error", e.message);
         }
     }
 
@@ -565,13 +572,14 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
 
         try {
             foreach (Mount mount in mounts) {
-		        string path = mount.get_root().get_path();
-		        print ("root: %s\n", path);
-                this.create_mounted_drive_link (path,x,y);
+		        string path = mount.get_root ().get_path ();
+		        string name = mount.get_name ();
+		        debug ("root: %s\n", path);
+                this.create_mounted_drive_link (path, name, x, y);
             }
         } catch (Error e) {
                 stderr.printf ("Error: %s\n", e.message);
-                Util.show_error_dialog ("Error", e.message);
+                //Util.show_error_dialog ("Error", e.message);
         }
     }
 
@@ -694,18 +702,18 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
      * @param int x the x position of the new file
      * @param int y the y position of the new file
      */
-    public void create_mounted_drive_link (string target, int x, int y) {
+    public void create_mounted_drive_link (string target, string name, int x, int y) {
         // cancelling the current monitor
         this.monitor.cancel ();
 
         // we create the text file with a touch command
         try {
             var file    = File.new_for_path (target);
-            var name    = file.get_basename ();
+            //var name    = file.get_basename ();
             string folder_path = this.get_absolute_path () + name;
 
             if (FileUtils.test (folder_path, FileTest.EXISTS)) {
-                print ("Error: link already exists for drive %s\n", name);
+                print ("Error: link already exists for drive %s\n", folder_path);
             } else {
                 var command = "ln -s \"" + target + "\" \"" + this.get_absolute_path () + "/" + name + "\"";
                 debug("command: %s"+command);

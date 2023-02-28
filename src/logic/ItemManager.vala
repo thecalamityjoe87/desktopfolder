@@ -423,11 +423,66 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
         var path = file.get_path ();
         general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
-        //debug (target_path);
-        if (target_path.contains("media") || target_path.contains("mnt")) {
+        string target_type = general_info.get_icon ().to_string ();
+        try {
+            if (target_path.contains("media") || target_path.contains("mnt")) {
+                return true;
+            } else {
+                return false;
+            }
+         } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+        }
+    }
+    
+    /**
+     * @name mounted_drive_link_type
+     * @description check what type the mounted drive (symlink) is
+     * 
+     */
+    public string mounted_drive_link_type () {
+        var file = this.get_file ();
+        var path = file.get_path ();
+        general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
+        string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
+        /* I'm not proud of this but it works */
+        string type_usb = "drive-harddisk-usb";
+        string type_hdd = "drive-harddisk";
+	    VolumeMonitor monitor = VolumeMonitor.get ();
+	    List<Mount> mounts = monitor.get_mounts ();
+
+        try {
+            if (target_path.contains("media") || target_path.contains("mnt"))
+            foreach (Mount mount in mounts) {
+		        if (target_path in mount.get_root ().get_path ()) {
+		            if (mount.get_icon ().to_string().contains(type_usb)) {
+		               return "type_removable";
+		            } else if (mount.get_icon ().to_string().contains(type_hdd)) {
+		                return "type_hdd";
+		            } else {
+		                return "type_other";
+		            }
+		        }
+		    }
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+        }
+	    return "type_other";
+    }
+    
+    /**
+     * @name is_mounted_drive_link_exists
+     * @description check whether the mounted drive (symlink) exists or not
+     * @return bool true->the item is a mounted drive
+     */
+    public bool is_mounted_drive_link_exists () {
+        File file = File.new_for_path (this.get_absolute_path ());
+        bool file_link = file.query_exists ();
+        if (file_link == true) {
             return true;
-        } else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -459,23 +514,24 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     }
 
     /**
-     * @name trash_mounted_drives_items
+     * @name destroy_mounted_drives_items
      * @description destroys all symlinked mounted drives
      */
-    public void trash_mounted_drives_items () {
+    public void destroy_mounted_drives_items () {
         if (this.folder.is_sync_running ()) {
             return;
         }
 
-        try {
-            if (this.is_mounted_drive_link ()) {
-                File file = File.new_for_path (this.get_absolute_path ());
-                file.delete ();
-            } 
-            this.on_delete ();
-        } catch (Error e) {
-            stderr.printf ("Error: %s\n", e.message);
-            Util.show_error_dialog ("Error", e.message);
+        if (this.is_mounted_drive_link_exists ()) {
+            try {
+                if (this.is_mounted_drive_link ()) {
+                    File file = File.new_for_path (this.get_absolute_path ());
+                    file.delete ();
+                }
+            } catch (Error e) {
+                stderr.printf ("Error: %s\n", e.message);
+                //Util.show_error_dialog ("Error", e.message);
+            }
         }
     }
 
@@ -516,6 +572,29 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
             ItemView view = to_delete[i];
             if (view != null) {
                 view.get_manager ().trash ();
+            }
+        }
+    }
+    
+    /**
+     * @name eject_mounted_drive
+     * @descriptionsend to trash the mounted symlink and eject the drive
+     */
+    public void eject_mounted_drive () {
+        if (this.folder.is_sync_running ()) {
+            return;
+        }
+        
+        if (this.is_mounted_drive_link_exists ()) {
+            try {
+                if (this.is_mounted_drive_link ()) {
+                    File file = File.new_for_path (this.get_absolute_path ());
+                    
+                    file.delete ();
+                }
+            } catch (Error e) {
+                stderr.printf ("Error: %s\n", e.message);
+                //Util.show_error_dialog ("Error", e.message);
             }
         }
     }
