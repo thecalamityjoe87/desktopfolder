@@ -76,27 +76,38 @@ public class DesktopFolder.DesktopManager : DesktopFolder.FolderManager {
     }
 
     /**
-     * @name show_mounted_drives
+     * @name activate_mounted_drives
      * @description shows mounted drives on desktop
      */
-    public void show_mounted_drives () {
+    public void activate_mounted_drives () {
         // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
         if (this.get_application ().get_desktop_visibility ()) {
             debug ("showing mounted drives");
-            base.check_for_mounted_drives ();
-            base.view.refresh ();
+            base.show_mounted_drives ();
         }
     }
     
     /**
-     * @name destroy_mounted_drives
-     * @description removes the drives off desktop
+     * @name deactivate_mounted_drives
+     * @description hides the drives off desktop
      */
-    public void destroy_mounted_drives () {
+    public void deactivate_mounted_drives () {
+        // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
+        if (this.get_application ().get_desktop_visibility ()) {
+            debug ("hiding all mounted drives");
+            base.hide_mounted_drives ();
+        }
+    }
+    
+    /**
+     * @name end_mounted_drives
+     * @description removes the drives off desktop and deletes its symlink
+     */
+    public void end_mounted_drives () {
         // debug (@"show_items $(this.get_application ().get_desktop_visibility ())");
         if (this.get_application ().get_desktop_visibility ()) {
             debug ("destroying all mounted drives");
-            base.hide_mounted_drives ();
+            base.destroy_mounted_drives ();
         }
     }
 

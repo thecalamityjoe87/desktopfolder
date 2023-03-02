@@ -51,8 +51,16 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     /** the id for the organize event timer */
     private uint organize_event_timeout;
     protected ItemManager item_manager = null;
-    
 
+    /** The volume monitor */
+    private GLib.VolumeMonitor volume_monitor = GLib.VolumeMonitor.get ();
+
+    /** Declare stuff needed for handling our volumes and mounts */
+    public GLib.Drive drive;
+    public GLib.Mount mount;
+    public GLib.Volume volume;
+    private GLib.SList<GLib.Volume> volumes;
+    private GLib.SList<GLib.Mount> mounts;
 
     /**
      * @constructor
@@ -76,10 +84,24 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
 
         // finally, we start monitoring the folder
         this.monitor_folder ();
+        
+        this.show_mounted_drives ();
 
         this.view.refresh ();
 
         this.dnd_behaviour = new DragnDrop.DndBehaviour (this, false, true);
+    }
+
+    /**
+     * @name device
+     * @description declare mount, device and volumes 
+     */
+    public void device (GLib.Drive drive, GLib.Mount mount, GLib.Volume volume) {
+        this.drive = drive;
+        this.mount = mount;
+        this.volume = volume;
+        this.volumes = new GLib.SList<GLib.Volume>();
+        this.mounts = new GLib.SList<GLib.Mount>();
     }
 
     /**
@@ -531,14 +553,40 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     }
 
     /**
+     * @name show_mounted_drives
+     * @description show all mounted drives in this folder. if not, we create the link.
+     */
+    public void show_mounted_drives () {
+        foreach (var item in items) {
+            if (!item.is_mounted_drive_link_exists ()) {
+                this.do_create_mounted_drives ();
+            }
+            item.show_mounted_drives_items ();
+        }
+        this.do_create_mounted_drives ();
+    }
+
+    /**
      * @name hide_mounted_drives
      * @description hide all mounted drives in this folder
      */
     public void hide_mounted_drives () {
-        try {
             foreach (var item in items) {
-                item.destroy_mounted_drives_items ();
+                if (item.is_mounted_drive_link_exists ()) {
+                    item.hide_mounted_drives_items ();
+                }
             }
+    }
+    
+    /**
+     * @name destroy_mounted_drives
+     * @description destroys all mounted drives in this folder
+     */
+    public void destroy_mounted_drives () {
+        try {
+                foreach (var item in items) {
+                    item.remove_mounted_drives ();
+                }
         } catch (Error e) {
                 stderr.printf ("Error: %s\n", e.message);
                 Util.show_error_dialog ("Error", e.message);
@@ -560,22 +608,20 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     }
 
     /**
-     * @name check_for_mounted_drives
+     * @name do_create_mounted_drives
      * @description check for the path of mounted drives
      * @param int x and int y are dummy integers
      */
-    public void check_for_mounted_drives () {
+    public void do_create_mounted_drives () {
         int x = 0;
         int y = 0;
-        VolumeMonitor monitor = VolumeMonitor.get ();
-        List<Mount> mounts = monitor.get_mounts ();
 
         try {
-            foreach (Mount mount in mounts) {
-		        string path = mount.get_root ().get_path ();
+            foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) this.volume_monitor.get_mounts ()) {
+		        string target = mount.get_root ().get_path ();
 		        string name = mount.get_name ();
-		        debug ("root: %s\n", path);
-                this.create_mounted_drive_link (path, name, x, y);
+		        debug ("root: %s\n", target);
+                this.create_mounted_drive_link (target, name, x, y);
             }
         } catch (Error e) {
                 stderr.printf ("Error: %s\n", e.message);

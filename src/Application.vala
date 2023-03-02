@@ -212,16 +212,52 @@ public class DesktopFolderApp : Gtk.Application {
         Wnck.Screen screen = Wnck.Screen.get_default ();
         screen.active_workspace_changed.connect (this.on_workspace_change);
 
-        // Listening mount change events
+        //Listening mount change events (GIO)
+        // We also use this to detect drive events and to handle it accordingly.
         this.volume_monitor = VolumeMonitor.get ();
-        volume_monitor.mount_changed.connect ((mount) => {
+        this.volume_monitor.mount_changed.connect ((mount) => {
             this.on_mount_changed ();
         });
         this.volume_monitor.volume_changed.connect ((volume) => {
             this.on_mount_changed ();
         });
+        this.volume_monitor.mount_added.connect ((mount) => {
+            this.on_mount_changed ();
+            //this.on_mount_changed ();
+            // recieved a signal that a mount was added, let's try and show items if allowed.
+            if (this.show_mounteddrives) {
+                this.desktop.activate_mounted_drives ();
+            }
+        });
         this.volume_monitor.mount_removed.connect ((mount) => {
 		    this.on_mount_changed ();
+		    // recieved signal that drive is unmmounted, let's destroy it.
+		    if (this.show_mounteddrives) {
+		        //this.unmounted () == true;
+		        this.desktop.end_mounted_drives ();
+		    }
+	    });
+	    this.volume_monitor.drive_disconnected.connect ((drive) => {
+	        this.on_mount_changed ();
+		    // recieved a signal that a drive was disconnected, let's destroy it.
+		    if (this.show_mounteddrives) {
+		        //this.unmounted () == true;
+		        this.desktop.end_mounted_drives ();
+		    }
+	    });
+	    this.volume_monitor.drive_eject_button.connect ((drive) => {
+	        this.on_mount_changed ();
+	        if (this.show_mounteddrives) {
+	            //this.unmounted () == true;
+		        this.desktop.end_mounted_drives ();
+		    }
+	    });
+	    this.volume_monitor.drive_stop_button.connect ((drive) => {
+	        this.on_mount_changed ();
+		    if (this.show_mounteddrives) {
+		    	//this.unmounted () == true;
+		        this.desktop.end_mounted_drives ();
+		    }
 	    });
 
 
@@ -230,6 +266,8 @@ public class DesktopFolderApp : Gtk.Application {
             return false;
         });
     }
+
+    //public signal bool unmounted();
 
     /** the uid reference for timeout workspace change */
     private uint _workspace_change_ref1;
@@ -365,10 +403,10 @@ public class DesktopFolderApp : Gtk.Application {
         this.show_mounteddrives = settings.get_boolean (SHOW_MOUNTEDDRIVES_KEY);
         // debug (@"called, show_desktoppanel: $(this.show_desktoppanel), show_desktopicons: $show_desktopicons");
             if (this.show_mounteddrives) {
-                this.desktop.show_mounted_drives ();
+                this.desktop.activate_mounted_drives ();
             } else {
                 // debug ("call destroy_mounted_drives")
-                this.desktop.destroy_mounted_drives ();
+                this.desktop.deactivate_mounted_drives ();
             }
     }
 
@@ -434,14 +472,6 @@ public class DesktopFolderApp : Gtk.Application {
         debug ("MOUNT FILE SYSTEM CHANGED");
         for (int i = 0; i < this.folders.length (); i++) {
             this.folders.nth_data (i).on_mount_changed ();
-        }
-        if (show_mounteddrives){
-            foreach (Mount mount in mounts) {
-            }
-            this.volume_monitor.mount_removed.connect ((mount) => {
-                 this.desktop.destroy_mounted_drives();
-	        });
-            this.desktop.show_mounted_drives ();
         }
         if (this.desktop != null) {
             this.desktop.on_mount_changed ();
