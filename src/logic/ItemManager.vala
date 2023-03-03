@@ -535,13 +535,20 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      * @return bool true->the item is a mounted drive
      */
     public bool is_mounted_drive_target_exists (string target) {
-        File file = File.new_for_path (target);
-        bool file_target = file.query_exists ();
-        if (file_target) {
-            return true;
-            print ("File exists\n at " + target);
-        } else {
-            print ("file does not exists\n");
+
+        try {
+            File file = File.new_for_path (target);
+            bool file_target = file.query_exists ();
+            if (file_target) {
+                print (" File exists\n at " + target);
+                return true;
+            } else {
+                print ("file does not exists\n");
+                return false;
+            }
+        } catch (Error e) {
+            stderr.printf ("Error: %s\n", e.message);
+            //Util.show_error_dialog ("Error", e.message);
         }
         return false;
     }
@@ -707,6 +714,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
                         print (target_path + " ");
                         if (this.is_mounted_drive_target_exists (target_path) == false) {
                             file.delete ();
+                        } else {
                             print ("TARGET DRIVE STILL ATTACHED ");
                         }
                 }
