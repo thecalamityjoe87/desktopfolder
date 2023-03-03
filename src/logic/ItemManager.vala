@@ -24,6 +24,8 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
     private string file_name;
     /** the File object associated with the item */
     private File file;
+    /** the main application */
+    private DesktopFolderApp application;
     /** the folder manager where this item is inserted */
     private FolderManager folder;
     /** whether the item is selected */
@@ -534,9 +536,12 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      */
     public bool is_mounted_drive_target_exists (string target) {
         File file = File.new_for_path (target);
-        bool file_link = file.query_exists ();
-        if (file_link == true) {
+        bool file_target = file.query_exists ();
+        if (file_target) {
             return true;
+            print ("File exists\n at " + target);
+        } else {
+            print ("file does not exists\n");
         }
         return false;
     }
@@ -675,7 +680,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
 
         foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) this.volume_monitor.get_mounts ()) {
             try {
-                if (this.is_selected () && this.is_mounted_drive_link_exists ()) {
+                if (this.is_selected ()) {
                         var target_file = this.get_file ();
                         general_info  = target_file.query_info ("*", FileQueryInfoFlags.NONE);
                         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
@@ -683,26 +688,26 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
                         //debug (target_path);
                         File file = File.new_for_path (this.get_absolute_path ());
                         //debug (this.get_absolute_path ());
-                        if (this.is_mounted_drive_target_exists (target_path)) {
-                            this.mount_ejection(target_path);
-                        }
-                        file.delete ();
-                        debug ("SYMLINK DESTROYED");
-                } else {
-                        // During a disconnect event, we find the dead symlink to remove.
-                        string deadName = file.get_basename ();
-                        string deadPath = this.folder.get_absolute_path () + deadName;
-                        //print (deadPath);
 
+                        this.mount_ejection(target_path);
+
+                        file.delete ();
+                        print ("SYMLINK DESTROYED ");
+                } else {
+                        /**
+                         * There is currently a bug in which a premount signal is sent (i.e. from eOS file manager)
+                         * there isn't a good way to remove the orphaned symlink. I'm not sure how to get around this.
+                         *
+                         */
+                        File file = File.new_for_path (this.get_absolute_path ());
                         var target_file = this.get_file ();
                         general_info  = target_file.query_info ("*", FileQueryInfoFlags.NONE);
                         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
 
-                        if (this.is_mounted_drive_target_exists (target_path)) {
-                            debug ("SYMLINK TARGET DRIVE STILL MOUNTED");
-                        } else {
-                            File deadFile = File.new_for_path (deadPath);
-                            deadFile.delete ();
+                        print (target_path + " ");
+                        if (this.is_mounted_drive_target_exists (target_path) == false) {
+                            file.delete ();
+                            print ("TARGET DRIVE STILL ATTACHED ");
                         }
                 }
             } catch (Error e) {

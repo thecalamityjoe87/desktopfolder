@@ -233,31 +233,26 @@ public class DesktopFolderApp : Gtk.Application {
 		    this.on_mount_changed ();
 		    // recieved signal that drive is unmmounted, let's destroy it.
 		    if (this.show_mounteddrives) {
-		        //this.unmounted () == true;
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });
 	    this.volume_monitor.drive_connected.connect ((drive) => {
 	        this.on_mount_changed ();
 	    });
-	    this.volume_monitor.drive_disconnected.connect ((drive) => {
-	        this.on_mount_changed ();
+	    this.volume_monitor.drive_disconnected.connect ((drive, drive_disconnected) => {
 		    // recieved a signal that a drive was disconnected, let's destroy it.
 		    if (this.show_mounteddrives) {
-		        //this.unmounted () == true;
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });
 	    this.volume_monitor.drive_eject_button.connect ((drive) => {
-	        this.on_mount_changed ();
 	        if (this.show_mounteddrives) {
-	            //this.unmounted () == true;
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });
-	    this.volume_monitor.drive_stop_button.connect ((drive) => {
-	        this.on_mount_changed ();
+	    this.volume_monitor.mount_pre_unmount.connect ((mount, pre_unmount) => {
 		    if (this.show_mounteddrives) {
+		        this.pre_unmount_callback ();
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });
@@ -269,7 +264,18 @@ public class DesktopFolderApp : Gtk.Application {
         });
     }
 
-    //public signal bool unmounted();
+    public signal void pre_unmount ();
+    public signal void drive_disconnected ();
+ 
+    public bool drive_disconnect_callback () {
+        this.drive_disconnected ();
+        return true;
+    }
+
+    public bool pre_unmount_callback () {
+        this.pre_unmount ();
+        return true;
+    }
 
     /** the uid reference for timeout workspace change */
     private uint _workspace_change_ref1;
