@@ -237,6 +237,9 @@ public class DesktopFolderApp : Gtk.Application {
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });
+	    this.volume_monitor.drive_connected.connect ((drive) => {
+	        this.on_mount_changed ();
+	    });
 	    this.volume_monitor.drive_disconnected.connect ((drive) => {
 	        this.on_mount_changed ();
 		    // recieved a signal that a drive was disconnected, let's destroy it.
@@ -255,7 +258,6 @@ public class DesktopFolderApp : Gtk.Application {
 	    this.volume_monitor.drive_stop_button.connect ((drive) => {
 	        this.on_mount_changed ();
 		    if (this.show_mounteddrives) {
-		    	//this.unmounted () == true;
 		        this.desktop.end_mounted_drives ();
 		    }
 	    });

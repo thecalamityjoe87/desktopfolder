@@ -440,7 +440,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      * @name is_mounted_drive_link
      * @description check whether the item is a mounted drive (symlink) or not
      * @return bool true->the item is a mounted drive
-     */
+    */
     public bool is_mounted_drive_link () {
         var file = this.get_file ();
         general_info  = file.query_info ("*", FileQueryInfoFlags.NONE);
@@ -508,9 +508,8 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
             foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) this.volume_monitor.get_mounts ()) {
 		        //string target_path = mount.get_root ().get_path ();
 		        string name = mount.get_name ();
-                print ("root: %s\n", name);
+                //print ("root: %s\n", name);
                 string link_path = this.folder.get_absolute_path () + name;
-                print (link_path);
                 File file = File.new_for_path (link_path);
                 bool file_link = file.query_exists ();
                 if (file_link) {
@@ -575,7 +574,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      * @description show all symlinked mounted drives
      */
     public void show_mounted_drives_items () {
-        if(this.is_mounted_drive_link ()) {
+        if(this.is_mounted_drive_link_exists ()) {
             this.show_view ();
         }
     }
@@ -585,9 +584,13 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
      * @description hide all symlinked mounted drives
      */
     public void hide_mounted_drives_items () {
-        if(this.is_mounted_drive_link ()) {
+        if(this.is_mounted_drive_link_exists ()) {
             this.hide_view ();
         }
+    }
+
+    public void check_for_dead_mounted_link () {
+        this.remove_mounted_drives ();
     }
 
     /**
@@ -672,7 +675,7 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
 
         foreach (GLib.Mount mount in (GLib.List<GLib.Mount>) this.volume_monitor.get_mounts ()) {
             try {
-                if (this.is_mounted_drive_link_exists () && this.is_selected ()) {
+                if (this.is_selected () && this.is_mounted_drive_link_exists ()) {
                         var target_file = this.get_file ();
                         general_info  = target_file.query_info ("*", FileQueryInfoFlags.NONE);
                         string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
@@ -686,12 +689,20 @@ public class DesktopFolder.ItemManager : Object, DragnDrop.DndView, Clipboard.Cl
                         file.delete ();
                         debug ("SYMLINK DESTROYED");
                 } else {
-                        File file = File.new_for_path (this.get_absolute_path ());
-                        bool file_link = file.query_exists ();
-                        if (file_link) {
-                            print ("Drive is still connected");
+                        // During a disconnect event, we find the dead symlink to remove.
+                        string deadName = file.get_basename ();
+                        string deadPath = this.folder.get_absolute_path () + deadName;
+                        //print (deadPath);
+
+                        var target_file = this.get_file ();
+                        general_info  = target_file.query_info ("*", FileQueryInfoFlags.NONE);
+                        string target_path = general_info.get_symlink_target (); //do this to obtain the target path of link
+
+                        if (this.is_mounted_drive_target_exists (target_path)) {
+                            debug ("SYMLINK TARGET DRIVE STILL MOUNTED");
                         } else {
-                            file.delete ();
+                            File deadFile = File.new_for_path (deadPath);
+                            deadFile.delete ();
                         }
                 }
             } catch (Error e) {

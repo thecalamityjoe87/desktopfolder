@@ -84,8 +84,6 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
 
         // finally, we start monitoring the folder
         this.monitor_folder ();
-        
-        this.show_mounted_drives ();
 
         this.view.refresh ();
 
@@ -552,18 +550,26 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
         this.view.clear_all ();
     }
 
+    public void check_dead_links () {
+        foreach (var item in items) {
+            item.check_for_dead_mounted_link ();
+        }
+    }
+
     /**
      * @name show_mounted_drives
      * @description show all mounted drives in this folder. if not, we create the link.
      */
     public void show_mounted_drives () {
         foreach (var item in items) {
-            if (!item.is_mounted_drive_link_exists ()) {
-                this.do_create_mounted_drives ();
+            if (item.is_mounted_drive_link_exists () && item.is_mounted_drive_link ()) {
+                //this.do_create_mounted_drives ();
+                item.show_mounted_drives_items ();
             }
-            item.show_mounted_drives_items ();
         }
-        this.do_create_mounted_drives ();
+        if (item_manager.is_mounted_drive_link_exists () == false) {
+            this.do_create_mounted_drives ();
+        }
     }
 
     /**
@@ -571,11 +577,11 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
      * @description hide all mounted drives in this folder
      */
     public void hide_mounted_drives () {
-            foreach (var item in items) {
-                if (item.is_mounted_drive_link_exists ()) {
-                    item.hide_mounted_drives_items ();
-                }
+        foreach (var item in items) {
+            if (item.is_mounted_drive_link ()) {
+                item.hide_mounted_drives_items ();
             }
+        }
     }
     
     /**
@@ -583,13 +589,8 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
      * @description destroys all mounted drives in this folder
      */
     public void destroy_mounted_drives () {
-        try {
-                foreach (var item in items) {
-                    item.remove_mounted_drives ();
-                }
-        } catch (Error e) {
-                stderr.printf ("Error: %s\n", e.message);
-                Util.show_error_dialog ("Error", e.message);
+        foreach (var item in items) {
+            item.remove_mounted_drives ();
         }
     }
 
@@ -760,6 +761,7 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
 
             if (FileUtils.test (folder_path, FileTest.EXISTS)) {
                 print ("Error: link already exists for drive %s\n", folder_path);
+                this.monitor_folder ();
             } else {
                 var command = "ln -s \"" + target + "\" \"" + this.get_absolute_path () + "/" + name + "\"";
                 debug("command: %s"+command);
@@ -945,7 +947,6 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
         this.create_view ();
 
         this.try_to_order_at_top ();
-
 
         // let's sync the files found at this folder
         this.sync_files (0, 0);
@@ -1189,7 +1190,6 @@ public class DesktopFolder.FolderSync.Thread {
     public void sync_files (int x, int y) {
         // we add the pending param to be processed, when a new item is found
         this.add_pending_param (new Param (x, y));
-
         mutex.lock () ;
         if (this.flag_running) {
             // it is running, so, lets start
