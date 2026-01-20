@@ -367,7 +367,11 @@ public class DesktopFolder.FolderManager : Object, DragnDrop.DndView, FolderSett
     protected void try_to_order_at_top () {
         this.view.set_keep_below (false);
         this.view.set_keep_above (true);
-        this.view.present ();
+        // Don't present desktop-type windows to avoid stealing focus; presenting
+        // a window can raise/focus it on some compositors. Only present non-desktop views.
+        if (this.view.get_type_hint () != Gdk.WindowTypeHint.DESKTOP) {
+            this.view.present ();
+        }
         this.view.set_keep_above (false);
         this.view.set_keep_below (true);
     }

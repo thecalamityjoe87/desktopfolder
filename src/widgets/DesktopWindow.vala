@@ -27,6 +27,8 @@ public class DesktopFolder.DesktopWindow : DesktopFolder.FolderWindow {
      */
     public DesktopWindow (FolderManager manager) {
         base (manager);
+        // Desktop window must not take input focus so users can interact with other apps
+        this.set_accept_focus (false);
         this.scroll.get_vscrollbar ().visible = false;
         this.scroll.get_hscrollbar ().visible = false;
     }

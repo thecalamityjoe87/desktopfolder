@@ -251,7 +251,30 @@ private class DesktopFolder.Organize.Thread {
 
                 while (cursor < MAX && item_moves.size > 0) {
                     Organize.ItemMove move = item_moves.remove_at (0);
-                    UtilGtkAnimation.animate_move (move.view, move.point, 500, UtilFx.AnimationMode.EASE_IN_BACK);
+                    if (this.checkright) {
+                        // For right-forced mode: hide the icon, jump it to the new
+                        // position and show it so it appears instantly on the right.
+                        move.view.hide ();
+                        parent_window.move_item (move.view, move.point.x, move.point.y);
+                        move.view.show ();
+                    } else {
+                        // If the movement is very large (e.g. switching from forced-right
+                        // back to normal) avoid animating across the whole screen —
+                        // instead hide, jump and show.
+                        Gtk.Allocation alloc = Gtk.Allocation ();
+                        move.view.get_allocation (out alloc);
+                        int curx = alloc.x;
+                        int dx = (curx > move.point.x) ? (curx - move.point.x) : (move.point.x - curx);
+                        // threshold: large fraction of width means jump instead of animate
+                        int threshold = width / 3;
+                        if (dx > threshold) {
+                            move.view.hide ();
+                            parent_window.move_item (move.view, move.point.x, move.point.y);
+                            move.view.show ();
+                        } else {
+                            UtilGtkAnimation.animate_move (move.view, move.point, 500, UtilFx.AnimationMode.EASE_IN_BACK);
+                        }
+                    }
                     cursor++;
                 }
 

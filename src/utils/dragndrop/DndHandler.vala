@@ -164,8 +164,14 @@ namespace DesktopFolder.DragnDrop {
             uchar[] ? data = null;
             Gdk.Atom property_name = Gdk.Atom.intern_static_string ("XdndDirectSave0");
             Gdk.Atom property_type = Gdk.Atom.intern_static_string ("text/plain");
+            var src_win = context.get_source_window ();
+            if (src_win == null) {
+                /* No source window available (likely Wayland) — cannot use X11 properties. */
+                warning ("source window not available; cannot read XdndDirectSave property");
+                return null;
+            }
 
-            bool exists            = Gdk.property_get (context.get_source_window (),
+            bool exists = Gdk.property_get (src_win,
                     property_name,
                     property_type,
                     0, /* offset into property to start getting */
@@ -193,7 +199,14 @@ namespace DesktopFolder.DragnDrop {
             // debug ("DNDHANDLER: set source uri to %s", uri);
             Gdk.Atom property_name = Gdk.Atom.intern_static_string ("XdndDirectSave0");
             Gdk.Atom property_type = Gdk.Atom.intern_static_string ("text/plain");
-            Gdk.property_change (context.get_source_window (),
+            var src_win = context.get_source_window ();
+            if (src_win == null) {
+                /* Wayland/backends without X11 window — cannot set X11 properties. */
+                warning ("source window not available; cannot set XdndDirectSave property");
+                return;
+            }
+
+            Gdk.property_change (src_win,
                 property_name,
                 property_type,
                 8,

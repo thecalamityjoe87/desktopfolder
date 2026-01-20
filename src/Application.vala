@@ -83,14 +83,14 @@ public class DesktopFolderApp : Gtk.Application {
      */
     protected override void activate () {
         // elementary OS 6 dark mode support
-        var granite_settings = Granite.Settings.get_default ();
+        /*var granite_settings = Granite.Settings.get_default ();
         var gtk_settings = Gtk.Settings.get_default ();
 
         gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
 
         granite_settings.notify["prefers-color-scheme"].connect (() => {
             gtk_settings.gtk_application_prefer_dark_theme = granite_settings.prefers_color_scheme == Granite.Settings.ColorScheme.DARK;
-        });
+        });*/
 
         base.activate ();
         debug ("activate event");
@@ -203,9 +203,8 @@ public class DesktopFolderApp : Gtk.Application {
         Gdk.Screen.get_default ().composited_changed.connect (this.on_screen_size_changed);
         Gdk.Screen.get_default ().monitors_changed.connect (this.on_screen_size_changed);
 
-        // Listening to workspace changes events
-        Wnck.Screen screen = Wnck.Screen.get_default ();
-        screen.active_workspace_changed.connect (this.on_workspace_change);
+        // Workspace change tracking via libwnck is disabled for Wayland.
+        // On Wayland there is no global Wnck screen; skip connecting.
 
         // Listening mount change events
         this.volume_monitor = VolumeMonitor.get ();
@@ -230,7 +229,7 @@ public class DesktopFolderApp : Gtk.Application {
      * @name on_workspace_change
      * @param previous workspace
      */
-    private void on_workspace_change (Wnck.Workspace ? previous) {
+    private void on_workspace_change () {
       // removing the pending threads
       try {
           Source.remove (this._workspace_change_ref1);
@@ -863,27 +862,13 @@ public class DesktopFolderApp : Gtk.Application {
      * @param args string[] the list of args to initialize Gdk
      */
     private static void minimize_all (string[] args) {
+        // libwnck-based minimize/show-desktop is not supported on Wayland.
+        // Initialize GTK loop briefly and return (no-op for Wayland).
         Gtk.init (ref args);
-
-        bool flagShowingDesktop = true;
-
-        // Help wanted: Need to check manually if we are showing desktop
-        // because screen.get_showing_desktop (); always return false
-        unowned Wnck.Screen screen = Wnck.Screen.get_default ();
         while (Gtk.events_pending ()) {
             Gtk.main_iteration ();
         }
-        unowned List <Wnck.Window> windows = screen.get_windows ();
-        foreach (Wnck.Window w in windows) {
-            if (!w.is_minimized () && w.get_window_type () == Wnck.WindowType.NORMAL) {
-                flagShowingDesktop = false;
-            }
-        }
-
-
-        // unowned Wnck.Screen screen = Wnck.Screen.get_default ();
-        bool show = !flagShowingDesktop; // !screen.get_showing_desktop ();
-        screen.toggle_showing_desktop (show);
+        return;
 
         /*
             string sshow="show: %s".printf(show?"true":"false");

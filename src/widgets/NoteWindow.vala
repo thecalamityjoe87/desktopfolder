@@ -132,9 +132,8 @@ public class DesktopFolder.NoteWindow : Gtk.ApplicationWindow {
         this.text.focus_out_event.connect (this.on_focus_out);
         // this.key_release_event.connect(this.on_key);
 
-        // TODO: Does the GTK window have any active signal or css :active state?
-        Wnck.Screen screen = Wnck.Screen.get_default ();
-        screen.active_window_changed.connect (on_active_change);
+        // On Wayland we don't use libwnck. Watch the window active state instead.
+        this.notify["is-active"].connect (() => { this.on_active_change (null); });
 
         NoteSettings settings = this.manager.get_settings ();
 
@@ -338,7 +337,7 @@ public class DesktopFolder.NoteWindow : Gtk.ApplicationWindow {
      * @description the screen actived window has change signal
      * @param {Wnck.Window} the previous actived window
      */
-    private void on_active_change (Wnck.Window ? previous) {
+    private void on_active_change (GLib.Object ? previous) {
         string           sclass = "df_active";
         Gtk.StyleContext style  = this.get_style_context ();
         if (this.is_active) {
